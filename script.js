@@ -6,61 +6,85 @@ this.game.stage.scale.refresh();
 
 var sprite;
 var cursors;
+var ground;
+var ant;
+
+//controls
+var leftKey;
+var rightKey;
+var upKey;
+var aKey;
+var dKey;
+var wKey;
 
 function preload(){
-	game.load.image('ant', 'assets/images/ant.png');
-	game.load.image('bkg', 'assets/images/bkg.png');
+	game.load.image('backgrounda1','assets/images/backgrounda1.png');
+	game.load.image('grounda1', 'assets/images/grounda3.png');
+	game.load.spritesheet('ant', 'assets/images/anta5.png', 44, 24, 5);
 }
 
 function create(){
 
-	game.add.image(0, 0, 'bkg');
+	game.add.image(0, 0, 'backgrounda1');
 
-	//Enable p2 physics
-	game.physics.startSystem(Phaser.Physics.P2JS);
+	game.physics.startSystem(Phaser.Physics.ARCADE);
 
 	game.stage.backgroundColor = '#123333';
 
-	//Add sprite
-	sprite = game.add.sprite(200,200, 'ant');
+	ground = game.add.sprite(0, game.world.height - game.cache.getImage('grounda1').height, 'grounda1');
+	ant = game.add.sprite(50, 350, 'ant');
+	ant.animations.add('walk', [0,1,2,3,4], 15, true);
+
+
+	game.physics.enable([ant, ground], Phaser.Physics.ARCADE);
+
+	ant.body.gravity.y = 400;
+	ant.anchor.setTo(.5, .5);
+
+	ground.body.immovable = true;
+
 
 	//Gravity
-	game.physics.p2.gravity.y = 100;
-	game.physics.p2.restitution = 0.8;
+	// game.physics.p2.gravity.y = 100;
+	// game.physics.p2.restitution = 0.8;
 
 	//Enable ant physics, default rectangular body
-	game.physics.p2.enable(sprite);
+	//game.physics.p2.enable(sprite);
 
 	//Body properties
-	sprite.body.setZeroDamping();
-	sprite.body.fixedRotation = true;
+	// sprite.body.setZeroDamping();
+	// sprite.body.fixedRotation = true;
 
-	//Movement with keyboard
-	cursors = game.input.keyboard.createCursorKeys();
+	//Defines input keys
+	leftKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
+	rightKey = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
+	upKey = game.input.keyboard.addKey(Phaser.Keyboard.UP);
+	aKey = game.input.keyboard.addKey(Phaser.Keyboard.A);
+	dKey = game.input.keyboard.addKey(Phaser.Keyboard.D);
+	wKey = game.input.keyboard.addKey(Phaser.Keyboard.W);
+
 }
 
 function update(){
-    sprite.body.setZeroVelocity();
+ 	game.physics.arcade.collide(ant, ground);
 
-    if (cursors.left.isDown)
-    {
-	sprite.body.moveLeft(300);
-    }
-    else if (cursors.right.isDown)
-    {
-	sprite.body.moveRight(300);
-    }
 
-    if (cursors.up.isDown)
-    {
-	sprite.body.moveUp(300);
-    }
-    else if (cursors.down.isDown)
-    {
-	sprite.body.moveDown(400);
-    }
-    else
-    {
-	sprite.body.moveDown(100);
-    }
+ 	if(leftKey.isDown || aKey.isDown){
+ 		ant.body.velocity.x = -270;
+ 		ant.scale.x = -1;
+ 		ant.play('walk');
+ 	} else if(rightKey.isDown || dKey.isDown){
+ 		ant.body.velocity.x = 270;
+ 		ant.scale.x = 1;
+ 		ant.play('walk');
+ 	} else {
+ 		ant.body.velocity.x = 0;
+ 		ant.animations.stop();
+ 	}
+
+ 	if((upKey.isDown || wKey.isDown) && ant.body.velocity.y ==0){
+ 		ant.body.velocity.y = -290;
+ 	}
+ 	//Handles input
+
 }
