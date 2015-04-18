@@ -19,11 +19,14 @@ function create(){
 	//Enable p2 physics
 	game.physics.startSystem(Phaser.Physics.P2JS);
 
-	//Apply gravity
-	//game.physics.p2.applyGravity = true;
+	game.stage.backgroundColor = '#123333';
 
 	//Add sprite
 	sprite = game.add.sprite(200,200, 'ant');
+
+	//Gravity
+	game.physics.p2.gravity.y = 100;
+	game.physics.p2.restitution = 0.8;
 
 	//Enable ant physics, default rectangular body
 	game.physics.p2.enable(sprite);
@@ -38,6 +41,7 @@ function create(){
 
 function update(){
     sprite.body.setZeroVelocity();
+
     if (cursors.left.isDown)
     {
 	sprite.body.moveLeft(300);
@@ -54,5 +58,9 @@ function update(){
     else if (cursors.down.isDown)
     {
 	sprite.body.moveDown(400);
+    }
+    else
+    {
+	sprite.body.moveDown(100);
     }
 }
