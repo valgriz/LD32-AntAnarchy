@@ -226,7 +226,7 @@ function update(){
 	//Explosion
 	///////////////////////////////
 	if(spaceBar.isDown){
-	    ant.body.x = 20;
+	    ant.body.x = 60;
 	    ant.body.y = 500;
 	    ant.body.velocity.x = 0;
 	    ant.body.velocity.y = 0;
@@ -236,7 +236,9 @@ function update(){
 }
 
 function pillCollide(ant, pilC){
-	pilC.kill();
+	if((pilC.key == 'pi4' || pilC.key == 'pi5') && spaceBar.isDown){
+	    pilC.kill();
+	}
 }
 
 
