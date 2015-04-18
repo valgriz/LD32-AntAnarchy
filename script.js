@@ -11,6 +11,7 @@ var ant;
 var platforms;
 var levelSize;
 var currentPosition;
+var spikes;
 
 //controls
 var leftKey;
@@ -19,6 +20,7 @@ var upKey;
 var aKey;
 var dKey;
 var wKey;
+var spaceBar;
 
 
 var landing;
@@ -34,6 +36,7 @@ function preload(){
 	game.load.image('grounda1', 'assets/images/grounda3.png');
 	game.load.spritesheet('ant', 'assets/images/anta8.png', 44, 24, 21);
 	game.load.image('platforma1', 'assets/images/platforma1.png');
+	game.load.image('spikes', 'assets/images/spikes.png');
 
 	game.load.image('pi1', 'assets/images/pi_1.png');
 	game.load.image('pi2', 'assets/images/pi_2.png');
@@ -70,9 +73,15 @@ function create(){
 
 	generatePillar(0,0);
 	
-
-	
 	ant = game.add.sprite(170, 350, 'ant');
+
+	/////////////////////////////
+	//Spawn spikes
+	////////////////////////////
+	spikes = new Phaser.Group(game);
+	for(i = 0; i < 10; i++){
+	    spikes.add(game.add.sprite((400+80*i), 510, 'spikes'));
+	}
 
 	ant.animations.add('idle', [0,1,2,3,4,5,6], 10, true);
 	ant.animations.add('run', [7,8,9,10,11,12,13], 10, true);
@@ -97,6 +106,10 @@ function create(){
 	    item.body.checkCollision.right = false;
 	    item.body.immovable = true;
 	}, this);
+	spikes.forEach(function(sp){
+	    game.physics.enable([ant, sp], Phaser.Physics.ARCADE);
+	    sp.body.immovable = true;
+	}, this);
 
 	//Defines input keys
 	leftKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
@@ -105,6 +118,7 @@ function create(){
 	aKey = game.input.keyboard.addKey(Phaser.Keyboard.A);
 	dKey = game.input.keyboard.addKey(Phaser.Keyboard.D);
 	wKey = game.input.keyboard.addKey(Phaser.Keyboard.W);
+	spaceBar = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 
 	game.camera.follow(ant);
 
@@ -148,6 +162,10 @@ function generatePillar(xPos, crackPos){
 function update(){
 
 	game.physics.arcade.collide(ant, pillar, pillCollide, null, this);
+
+	spikes.forEach(function(item){
+	    game.physics.arcade.collide(ant, item, function(){alert("Ant died");}, null, this);
+	}, this);
     
     if(!onGround){
 		platforms.forEach(function(item){
@@ -201,6 +219,15 @@ function update(){
  	if((upKey.isDown || wKey.isDown) && ant.body.velocity.y ==0){
  		ant.body.velocity.y = -500;
  	}
+	///////////////////////////////
+	//Explosion
+	///////////////////////////////
+	if(spaceBar.isDown){
+	    ant.body.x = 20;
+	    ant.body.y = 500;
+	    ant.body.velocity.x = 0;
+	    ant.body.velocity.y = 0;
+	}
  	//Handles input
 
 }
