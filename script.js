@@ -55,8 +55,15 @@ function create(){
 
 	ground = game.add.sprite(0, game.world.height - game.cache.getImage('grounda1').height, 'grounda1');
 	ant = game.add.sprite(50, 350, 'ant');
-	
-	spikes = game.add.sprite(400, 400, 'spikes');
+
+	//////////////////////////////////
+	//Spawn spikes
+	/////////////////////////////////	
+	spikes = new Phaser.Group(game);
+	for(i = 0; i < 10; i ++){
+	    spikes.add(game.add.sprite((400 + 80*i), 500, 'spikes'));
+	}
+
 
 	ant.animations.add('idle', [0,1,2,3,4,5,6], 10, true);
 	ant.animations.add('run', [7,8,9,10,11,12,13], 10, true);
@@ -79,8 +86,10 @@ function create(){
 	    item.body.checkCollision.right = false;
 	    item.body.immovable = true;
 	}, this);
-	game.physics.enable([ant, spikes], Phaser.Physics.ARCADE);
-	spikes.body.immovable = true;
+	spikes.forEach(function(sp){
+		game.physics.enable([ant, sp], Phaser.Physics.ARCADE);
+		sp.body.immovable = true;
+	}, this);
 
 
 	//Defines input keys
@@ -98,7 +107,11 @@ function create(){
 
 
 function update(){
-    
+    	
+    	spikes.forEach(function(item){
+		game.physics.arcade.collide(ant, item, function(){alert("Ant died");}, null, this);
+	}, this);
+
     	if(!onGround){
 		platforms.forEach(function(item){
 		    game.physics.arcade.collide(ant, item, onSurface, null, this);
@@ -189,3 +202,4 @@ function onSurface(){
 	ant.animations.play('land');
 
 }
+
