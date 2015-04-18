@@ -233,7 +233,8 @@ function update(){
 }
 
 function pillCollide(ant, pilC){
-	pilC.kill();
+	if(pilC.cache)
+
 }
 
 
