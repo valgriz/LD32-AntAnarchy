@@ -163,6 +163,9 @@ function update(){
 
 	game.physics.arcade.collide(ant, pillar, pillCollide, null, this);
 
+	//////////////////////////////////////////////
+	// EDIT FOR SPIKE DEATH
+	// ///////////////////////////////////////////
 	spikes.forEach(function(item){
 	    game.physics.arcade.collide(ant, item, function(){alert("Ant died");}, null, this);
 	}, this);
