@@ -19,8 +19,10 @@ var dKey;
 var wKey;
 
 
-var onGround;
 var landing;
+var onGround;
+
+var lTimer;
 
 function preload(){
 	game.load.image('backgroundA1','assets/images/backgroundA1.png');
@@ -31,6 +33,9 @@ function preload(){
 
 
 function create(){
+
+
+	onGround = false;
 
 	game.add.image(0, 0, 'backgroundA1');
 
@@ -46,7 +51,6 @@ function create(){
 	ant.animations.add('land', [14,15,16,17,18,19,20], 15, false);
 	ant.animations.add('jump', 21, 10, true);
 
-	onGround = false;
 	game.physics.enable([ant, ground], Phaser.Physics.ARCADE);
 	
 	//Loads first level
@@ -55,6 +59,7 @@ function create(){
 
 	ant.body.gravity.y = 800;
 	ant.anchor.setTo(.5, .5);
+	lTimer = 0;
 
 	//Enables physics for all loaded platforms
 	ground.body.immovable = true;
@@ -71,41 +76,60 @@ function create(){
 	dKey = game.input.keyboard.addKey(Phaser.Keyboard.D);
 	wKey = game.input.keyboard.addKey(Phaser.Keyboard.W);
 
+
+
 }
+
 
 function update(){
     
-	platforms.forEach(function(item){
-	    game.physics.arcade.collide(ant,item);
-	}, this);
+    if(!onGround){
+		platforms.forEach(function(item){
+		    game.physics.arcade.collide(ant, item, onSurface, null, this);
+		}, this);
+	} else {
+		platforms.forEach(function(item){
+		    game.physics.arcade.collide(ant, item);
+		}, this);
+	}
 
 	if(!onGround){
 		game.physics.arcade.collide(ant, ground, onSurface, null, this);
 		
 	} else {
 		game.physics.arcade.collide(ant, ground);
-		
 	}
+
+	if(Math.abs(ant.body.velocity.y > 0)){
+		onGround = false;
+	}
+
+	//ant.animations.isFinished(cod());
 
  	
  	//ant.play('idle');
+ 	lTimer++;
 
  	if(leftKey.isDown || aKey.isDown){
  		ant.body.velocity.x = -270;
  		ant.scale.x = -1;
- 		ant.animations.play('run');
+ 		if(lTimer > 30){
+ 			ant.animations.play('run');
+ 		}
  	} else if(rightKey.isDown || dKey.isDown){
  		ant.body.velocity.x = 270;
  		ant.scale.x = 1;
  		ant.animations.play('run');
  	} else {
  		//ant.body.velocity.x = 0;
- 		//ant.animations.play('idle');
+ 		if(lTimer > 30){
+ 			ant.animations.play('idle');
+ 		}
  		ant.body.acceleration.x = -5 * ant.body.velocity.x;
  	}
 
  	if(ant.body.velocity.y!=0){
- 		//ant.animations.play('idle');
+ 		ant.animations.play('idle');
  	}
  	if((upKey.isDown || wKey.isDown) && ant.body.velocity.y ==0){
  		ant.body.velocity.y = -500;
@@ -128,5 +152,7 @@ function loadLevel1(){
 
 function onSurface(){
 	onGround = true;
-	landing = ant.animations.play('land');
+	lTimer = 0;
+	ant.animations.play('land');
+
 }
