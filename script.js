@@ -163,6 +163,9 @@ function update(){
 
 	game.physics.arcade.collide(ant, pillar, pillCollide, null, this);
 
+	//////////////////////////////////////////////
+	// EDIT FOR SPIKE DEATH
+	// ///////////////////////////////////////////
 	spikes.forEach(function(item){
 	    game.physics.arcade.collide(ant, item, function(){alert("Ant died");}, null, this);
 	}, this);
@@ -223,7 +226,7 @@ function update(){
 	//Explosion
 	///////////////////////////////
 	if(spaceBar.isDown){
-	    ant.body.x = 20;
+	    ant.body.x = 60;
 	    ant.body.y = 500;
 	    ant.body.velocity.x = 0;
 	    ant.body.velocity.y = 0;
@@ -233,8 +236,9 @@ function update(){
 }
 
 function pillCollide(ant, pilC){
-	if(pilC.cache)
-
+	if((pilC.key == 'pi4' || pilC.key == 'pi5') && spaceBar.isDown){
+	    pilC.kill();
+	}
 }
 
 
