@@ -69,7 +69,6 @@ function create(){
 
 
 	generatePillar(0,0);
-	generatePillar(700, 4);
 	
 
 	
