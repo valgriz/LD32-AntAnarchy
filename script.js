@@ -43,18 +43,6 @@ function create(){
 
 	ground.body.immovable = true;
 
-
-	//Gravity
-	// game.physics.p2.gravity.y = 100;
-	// game.physics.p2.restitution = 0.8;
-
-	//Enable ant physics, default rectangular body
-	//game.physics.p2.enable(sprite);
-
-	//Body properties
-	// sprite.body.setZeroDamping();
-	// sprite.body.fixedRotation = true;
-
 	//Defines input keys
 	leftKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
 	rightKey = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
