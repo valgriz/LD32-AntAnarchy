@@ -9,6 +9,8 @@ var cursors;
 var ground;
 var ant;
 var platforms;
+var levelSize;
+var currentPosition;
 
 //controls
 var leftKey;
@@ -37,14 +39,22 @@ function create(){
 
 	onGround = false;
 
+    game.world.setBounds(0, 0, 1920, 560);
 	game.add.image(0, 0, 'backgroundA1');
 
 	game.physics.startSystem(Phaser.Physics.ARCADE);
 
 	game.stage.backgroundColor = '#123333';
 
+	//Loads first level
+	platforms = new Phaser.Group(game);
+	loadLevel1();
+	levelSize = 800;
+
+
 	ground = game.add.sprite(0, game.world.height - game.cache.getImage('grounda1').height, 'grounda1');
 	ant = game.add.sprite(50, 350, 'ant');
+	
 
 	ant.animations.add('idle', [0,1,2,3,4,5,6], 10, true);
 	ant.animations.add('run', [7,8,9,10,11,12,13], 10, true);
@@ -53,11 +63,8 @@ function create(){
 
 	game.physics.enable([ant, ground], Phaser.Physics.ARCADE);
 	
-	//Loads first level
-	platforms = new Phaser.Group(game);
-	loadLevel1();
-
 	ant.body.gravity.y = 800;
+	ant.body.collideWorldBounds = true;
 	ant.anchor.setTo(.5, .5);
 	lTimer = 0;
 
@@ -65,6 +72,9 @@ function create(){
 	ground.body.immovable = true;
 	platforms.forEach(function(item){
 	    game.physics.enable([ant, item], Phaser.Physics.ARCADE);
+	    item.body.checkCollision.down = false;
+	    item.body.checkCollision.left = false;
+	    item.body.checkCollision.right = false;
 	    item.body.immovable = true;
 	}, this);
 
@@ -76,7 +86,7 @@ function create(){
 	dKey = game.input.keyboard.addKey(Phaser.Keyboard.D);
 	wKey = game.input.keyboard.addKey(Phaser.Keyboard.W);
 
-
+	game.camera.follow(ant);
 
 }
 
@@ -111,6 +121,7 @@ function update(){
  	lTimer++;
 
  	if(leftKey.isDown || aKey.isDown){
+
  		ant.body.velocity.x = -270;
  		ant.scale.x = -1;
  		if(lTimer > 30){
