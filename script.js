@@ -9,8 +9,8 @@ var cursors;
 var ground;
 var ant;
 var platforms;
-var levelSize;
 var currentPosition;
+var spikes;
 
 //controls
 var leftKey;
@@ -19,6 +19,7 @@ var upKey;
 var aKey;
 var dKey;
 var wKey;
+var spaceBar;
 
 
 var landing;
@@ -31,6 +32,7 @@ function preload(){
 	game.load.image('grounda1', 'assets/images/grounda3.png');
 	game.load.spritesheet('ant', 'assets/images/anta8.png', 44, 24, 21);
 	game.load.image('platforma1', 'assets/images/platforma1.png');
+	game.load.image('spikes', 'assets/images/spikes.png');
 }
 
 
@@ -39,7 +41,7 @@ function create(){
 
 	onGround = false;
 
-    game.world.setBounds(0, 0, 1920, 560);
+	game.world.setBounds(0, 0, 1920, 560);
 	game.add.image(0, 0, 'backgroundA1');
 
 	game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -49,12 +51,12 @@ function create(){
 	//Loads first level
 	platforms = new Phaser.Group(game);
 	loadLevel1();
-	levelSize = 800;
 
 
 	ground = game.add.sprite(0, game.world.height - game.cache.getImage('grounda1').height, 'grounda1');
 	ant = game.add.sprite(50, 350, 'ant');
 	
+	spikes = game.add.sprite(400, 400, 'spikes');
 
 	ant.animations.add('idle', [0,1,2,3,4,5,6], 10, true);
 	ant.animations.add('run', [7,8,9,10,11,12,13], 10, true);
@@ -77,6 +79,9 @@ function create(){
 	    item.body.checkCollision.right = false;
 	    item.body.immovable = true;
 	}, this);
+	game.physics.enable([ant, spikes], Phaser.Physics.ARCADE);
+	spikes.body.immovable = true;
+
 
 	//Defines input keys
 	leftKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
@@ -85,6 +90,7 @@ function create(){
 	aKey = game.input.keyboard.addKey(Phaser.Keyboard.A);
 	dKey = game.input.keyboard.addKey(Phaser.Keyboard.D);
 	wKey = game.input.keyboard.addKey(Phaser.Keyboard.W);
+	spaceBar = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 
 	game.camera.follow(ant);
 
@@ -93,7 +99,7 @@ function create(){
 
 function update(){
     
-    if(!onGround){
+    	if(!onGround){
 		platforms.forEach(function(item){
 		    game.physics.arcade.collide(ant, item, onSurface, null, this);
 		}, this);
@@ -145,6 +151,22 @@ function update(){
  	if((upKey.isDown || wKey.isDown) && ant.body.velocity.y ==0){
  		ant.body.velocity.y = -500;
  	}
+	//////////////////////////////
+	//Explosion
+	//////////////////////////////
+	if(spaceBar.isDown){
+	    	//Play animation
+		//Check if a pillar has been broken
+		//If so, decrement pillars by 1
+		//If pillar count is 0, next level
+		//If not, check if lives are 0
+		//If so, Decrement lives:
+		ant.body.x = 20;
+		ant.body.y = 500;
+		ant.body.velocity.x = 0;
+		ant.body.velocity.y = 0;
+		//Else, game over
+	}
  	//Handles input
 
 }
