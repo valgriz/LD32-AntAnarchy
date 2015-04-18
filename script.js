@@ -66,10 +66,14 @@ function update(){
  		ant.scale.x = 1;
  		ant.play('walk');
  	} else {
- 		ant.body.velocity.x = 0;
+ 		//ant.body.velocity.x = 0;
  		ant.animations.stop();
+ 		ant.body.acceleration.x = -3 * ant.body.velocity.x;
  	}
 
+ 	if(ant.body.velocity.y!=0){
+ 		ant.animations.stop();
+ 	}
  	if((upKey.isDown || wKey.isDown) && ant.body.velocity.y ==0){
  		ant.body.velocity.y = -290;
  	}
