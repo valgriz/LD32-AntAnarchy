@@ -72,6 +72,8 @@ function create(){
 
 
 	generatePillar(0,0);
+
+	generatePillar(400, 7);
 	
 	ant = game.add.sprite(170, 350, 'ant');
 
@@ -127,8 +129,6 @@ function create(){
 
 
 function generatePillar(xPos, crackPos){
-
-
 	for(var i = 0; i < 14; i++){
 		var pil;
 		if(i == 0){
@@ -150,10 +150,16 @@ function generatePillar(xPos, crackPos){
 	if(crackPos>1 && crackPos<10){
 		crackPos += 2;
 		var temp = pillar.getAt(crackPos);
-
 		temp = pillar.create(xPos, 40*crackPos, 'pi4')
+		temp.enableBody = true;
+		game.physics.arcade.enable(temp);
+		temp.body.immovable = true;
+
 		var temp2 = pillar.getAt(crackPos+1);
 		temp2 = pillar.create(xPos, 40*(crackPos-1), 'pi5');
+		temp2.enableBody = true;
+		game.physics.arcade.enable(temp2);
+		temp2.body.immovable = true;
 	}
 
 }
@@ -207,7 +213,9 @@ function update(){
  	} else if(rightKey.isDown || dKey.isDown){
  		ant.body.velocity.x = 270;
  		ant.scale.x = 1;
- 		ant.animations.play('run');
+ 		if(lTimer > 30){
+ 			ant.animations.play('run');
+ 		}
  	} else {
  		//ant.body.velocity.x = 0;
  		if(lTimer > 30){
@@ -236,7 +244,7 @@ function update(){
 }
 
 function pillCollide(ant, pilC){
-	if((pilC.key == 'pi4' || pilC.key == 'pi5') && spaceBar.isDown){
+	if((pilC.key == 'pi4' || pilC.key == 'pi5' || pilC.key == 'pi3') && spaceBar.isDown){
 	    pilC.kill();
 	}
 }
