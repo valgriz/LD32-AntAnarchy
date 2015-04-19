@@ -72,6 +72,7 @@ function create(){
 
 
 	generatePillar(0,0);
+	generatePillar(400,8);
 	
 	ant = game.add.sprite(170, 350, 'ant');
 
@@ -236,7 +237,7 @@ function update(){
 }
 
 function pillCollide(ant, pilC){
-	if((pilC.key == 'pi4' || pilC.key == 'pi5') && spaceBar.isDown){
+	if((pilC.key == 'pi3' || pilC.key == 'pi5') && spaceBar.isDown){
 	    pilC.kill();
 	}
 }
