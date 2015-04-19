@@ -32,13 +32,17 @@ var pillarBase;
 
 var lTimer;
 
+var backgroundX;
+var backTrack;
+var backMove;
+
 var nextColumnXPosition;
 
 function preload(){
-	game.load.image('backgroundA1','assets/images/backgroundA1.png');
-	game.load.image('grounda1', 'assets/images/grounda3.png');
+	game.load.image('backgroundA1','assets/images/backgroundA2.png');
+	game.load.image('grounda1', 'assets/images/grounda4.png');
 	game.load.spritesheet('ant', 'assets/images/anta8.png', 44, 24, 21);
-	game.load.image('platforma1', 'assets/images/platforma1.png');
+	game.load.image('platforma1', 'assets/images/platformb1.png');
 	game.load.image('spikes', 'assets/images/spikes.png');
 
 	game.load.image('pi1', 'assets/images/pi_1.png');
@@ -57,8 +61,14 @@ function create(){
 
 	onGround = false;
 
-    game.world.setBounds(0, 0, 820, 560);
-	game.add.image(0, 0, 'backgroundA1');
+    game.world.setBounds(0, 0, 1640, 560);
+
+
+	backTrack = game.add.sprite(0, 0, 'backgroundA1');
+	backTrack.enableBody = true;
+
+
+
 
 	game.physics.startSystem(Phaser.Physics.ARCADE);
 
@@ -75,18 +85,18 @@ function create(){
 	pillarBase = game.add.group();
 
 
-	generatePillar(0,0);
-	nextColumnXPosition = 720;
+	generatePillar(460,0);
+	nextColumnXPosition = 1180;
 	generatePillar(nextColumnXPosition, 8);
 	
-	ant = game.add.sprite(170, 350, 'ant');
+	ant = game.add.sprite(820, 350, 'ant');
 
 	/////////////////////////////
 	//Spawn spikes
 	////////////////////////////
 	spikes = new Phaser.Group(game);
 	for(i = 0; i < 10; i++){
-	    spikes.add(game.add.sprite((400+80*i), 510, 'spikes'));
+	    //spikes.add(game.add.sprite((400+80*i), 510, 'spikes'));
 	}
 
 	ant.animations.add('idle', [0,1,2,3,4,5,6], 10, true);
@@ -94,7 +104,8 @@ function create(){
 	ant.animations.add('land', [14,15,16,17,18,19,20], 15, false);
 	ant.animations.add('jump', 21, 10, true);
 
-	game.physics.enable([ant, ground], Phaser.Physics.ARCADE);
+	game.physics.enable([ant, ground, backTrack], Phaser.Physics.ARCADE);
+
 	
 	ant.body.gravity.y = 800;
 	ant.body.collideWorldBounds = true;
@@ -156,22 +167,6 @@ function generatePillar(xPos, crackPos){
 		game.physics.arcade.enable(pil);
 		pil.body.immovable = true;
 	}
-
-	// if(crackPos>1 && crackPos<10){
-	// 	crackPos += 2;
-	// 	var temp = pillar.getAt(crackPos);
-	// 	temp = pillar.create(xPos, 40*crackPos, 'pi4')
-	// 	temp.enableBody = true;
-	// 	game.physics.arcade.enable(temp);
-	// 	temp.body.immovable = true;
-
-	// 	var temp2 = pillar.getAt(crackPos+1);
-	// 	temp2 = pillar.create(xPos, 40*(crackPos-1), 'pi5');
-	// 	temp2.enableBody = true;
-	// 	game.physics.arcade.enable(temp2);
-	// 	temp2.body.immovable = true;
-	// }
-
 }
 
 
@@ -215,12 +210,19 @@ function update(){
  	lTimer++;
 
  	if(leftKey.isDown || aKey.isDown){
-
  		ant.body.velocity.x = -270;
  		ant.scale.x = -1;
  		if(lTimer > 30){
  			ant.animations.play('run');
  		}
+
+
+
+ 		//backTrack.body.velocity.x = 20;
+
+
+
+
  	} else if(rightKey.isDown || dKey.isDown){
  		ant.body.velocity.x = 270;
  		ant.scale.x = 1;
@@ -245,13 +247,16 @@ function update(){
 	//Explosion
 	///////////////////////////////
 	if(spaceBar.isDown){
-	    ant.body.x = 170;
-	    ant.body.y = 350;
-	    ant.body.velocity.x = 0;
-	    ant.body.velocity.y = 0;
+	    // ant.body.x = 170;
+	    // ant.body.y = 350;
+	    // ant.body.velocity.x = 0;
+	    // ant.body.velocity.y = 0;
 	}
  	//Handles input
 
+ 	if(backMove==true){
+ 		backTrack.body.velocity.x = -ant.body.velocity.x;
+ 	}
 }
 
 function theDeadMethod(){
