@@ -28,8 +28,11 @@ var onGround;
 
 var pillar;
 var pillars;
+var pillarBase;
 
 var lTimer;
+
+var nextColumnXPosition;
 
 function preload(){
 	game.load.image('backgroundA1','assets/images/backgroundA1.png');
@@ -40,9 +43,9 @@ function preload(){
 
 	game.load.image('pi1', 'assets/images/pi_1.png');
 	game.load.image('pi2', 'assets/images/pi_2.png');
-	game.load.image('pi3', 'assets/images/pi_3.png');
-	game.load.image('pi4', 'assets/images/pi_4.png');
-	game.load.image('pi5', 'assets/images/pi_5.png');
+	game.load.image('pi3', 'assets/images/pit_3.png');
+	game.load.image('pi4', 'assets/images/pit_4.png');
+	game.load.image('pi5', 'assets/images/pit_5.png');
 	game.load.image('pi6', 'assets/images/pi_6.png');
 	game.load.image('pi7', 'assets/images/pi_7.png');
 
@@ -54,7 +57,7 @@ function create(){
 
 	onGround = false;
 
-    game.world.setBounds(0, 0, 3000, 560);
+    game.world.setBounds(0, 0, 820, 560);
 	game.add.image(0, 0, 'backgroundA1');
 
 	game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -69,11 +72,12 @@ function create(){
 
 	pillar = game.add.group();
 	pillars = game.add.group();
+	pillarBase = game.add.group();
 
 
 	generatePillar(0,0);
-
-	generatePillar(400, 7);
+	nextColumnXPosition = 720;
+	generatePillar(nextColumnXPosition, 8);
 	
 	ant = game.add.sprite(170, 350, 'ant');
 
@@ -132,35 +136,41 @@ function generatePillar(xPos, crackPos){
 	for(var i = 0; i < 14; i++){
 		var pil;
 		if(i == 0){
-			pil = pillar.create(xPos, 40 * i, 'pi7');
+			pil = pillarBase.create(xPos, 40 * i, 'pi7');
 		} else if (i==1){
-			pil = pillar.create(xPos, 40 * i, 'pi6');
+			pil = pillarBase.create(xPos, 40 * i, 'pi6');
 		} else if (i==12){
-			pil = pillar.create(xPos, 40 * i, 'pi2');
+			pil = pillarBase.create(xPos, 40 * i, 'pi2');
 		} else if (i==13){
-			pil = pillar.create(xPos, 40 * i, 'pi1');
+			pil = pillarBase.create(xPos, 40 * i, 'pi1');
+		} else if (((i == crackPos+1) || (i==crackPos+2))&&crackPos!=0){
+			if(i == crackPos+1){
+			pil = pillar.create(xPos + 15, 40*(crackPos + 2), 'pi4')
+			} else if(i == crackPos+2){
+			pil = pillar.create(xPos + 15, 40*(crackPos + 1), 'pi5');
+			}
 		} else {
-			pil = pillar.create(xPos, 40 * i, 'pi3');
+			pil = pillar.create(xPos + 15, 40 * i, 'pi3');
 		}
 		pil.enableBody = true;
 		game.physics.arcade.enable(pil);
 		pil.body.immovable = true;
 	}
 
-	if(crackPos>1 && crackPos<10){
-		crackPos += 2;
-		var temp = pillar.getAt(crackPos);
-		temp = pillar.create(xPos, 40*crackPos, 'pi4')
-		temp.enableBody = true;
-		game.physics.arcade.enable(temp);
-		temp.body.immovable = true;
+	// if(crackPos>1 && crackPos<10){
+	// 	crackPos += 2;
+	// 	var temp = pillar.getAt(crackPos);
+	// 	temp = pillar.create(xPos, 40*crackPos, 'pi4')
+	// 	temp.enableBody = true;
+	// 	game.physics.arcade.enable(temp);
+	// 	temp.body.immovable = true;
 
-		var temp2 = pillar.getAt(crackPos+1);
-		temp2 = pillar.create(xPos, 40*(crackPos-1), 'pi5');
-		temp2.enableBody = true;
-		game.physics.arcade.enable(temp2);
-		temp2.body.immovable = true;
-	}
+	// 	var temp2 = pillar.getAt(crackPos+1);
+	// 	temp2 = pillar.create(xPos, 40*(crackPos-1), 'pi5');
+	// 	temp2.enableBody = true;
+	// 	game.physics.arcade.enable(temp2);
+	// 	temp2.body.immovable = true;
+	// }
 
 }
 
@@ -168,12 +178,13 @@ function generatePillar(xPos, crackPos){
 function update(){
 
 	game.physics.arcade.collide(ant, pillar, pillCollide, null, this);
+	game.physics.arcade.collide(ant, pillarBase, pillCollide, null, this);
 
 	//////////////////////////////////////////////
 	// EDIT FOR SPIKE DEATH
 	// ///////////////////////////////////////////
 	spikes.forEach(function(item){
-	    game.physics.arcade.collide(ant, item, function(){alert("Ant died");}, null, this);
+	    game.physics.arcade.collide(ant, item, function(){theDeadMethod();}, null, this);
 	}, this);
     
     if(!onGround){
@@ -234,8 +245,8 @@ function update(){
 	//Explosion
 	///////////////////////////////
 	if(spaceBar.isDown){
-	    ant.body.x = 60;
-	    ant.body.y = 500;
+	    ant.body.x = 170;
+	    ant.body.y = 350;
 	    ant.body.velocity.x = 0;
 	    ant.body.velocity.y = 0;
 	}
@@ -243,9 +254,16 @@ function update(){
 
 }
 
+function theDeadMethod(){
+
+}
+
 function pillCollide(ant, pilC){
-	if((pilC.key == 'pi4' || pilC.key == 'pi5' || pilC.key == 'pi3') && spaceBar.isDown){
+	if((pilC.key == 'pi4' || pilC.key == 'pi5') && spaceBar.isDown){
 	    pilC.kill();
+	    game.world.setBounds(0,0, game.world.getBounds().width + 820 ,560)
+	    nextColumnXPosition+=720;
+	    generatePillar(nextColumnXPosition, 8);
 	}
 }
 
