@@ -29,12 +29,20 @@ var onGround;
 var pillar;
 var pillars;
 var pillarBase;
+var backDrops;
+
 
 var lTimer;
 
 var backgroundX;
 var backTrack;
 var backMove;
+
+
+var shouldGenerate;
+var backgroundGenPos;
+
+var cobblestoneGroup;
 
 var nextColumnXPosition;
 
@@ -52,7 +60,6 @@ function preload(){
 	game.load.image('pi5', 'assets/images/pit_5.png');
 	game.load.image('pi6', 'assets/images/pi_6.png');
 	game.load.image('pi7', 'assets/images/pi_7.png');
-
 }
 
 
@@ -64,11 +71,16 @@ function create(){
     game.world.setBounds(0, 0, 1640, 560);
 
 
-	backTrack = game.add.sprite(0, 0, 'backgroundA1');
-	backTrack.enableBody = true;
+	//backTrack = game.add.sprite(0, 0, 'backgroundA1');
+	//backTrack.enableBody = true;
 
 
+	backDrops = game.add.group();
 
+	shouldGenerate = 0;
+	backgroundGenPos = 0;
+
+	backDrops.create(backgroundGenPos,0, 'backgroundA1');
 
 	game.physics.startSystem(Phaser.Physics.ARCADE);
 
@@ -78,11 +90,18 @@ function create(){
 	platforms = new Phaser.Group(game);
 	loadLevel1();
 
-	ground = game.add.sprite(0, game.world.height - game.cache.getImage('grounda1').height, 'grounda1');
+
+	cobblestoneGroup = new Phaser.Group(game);
+//>>>>>>>>>>>>>>>>
+	//ground = game.add.sprite(0, game.world.height - game.cache.getImage('grounda1').height, 'grounda1');
+
+	cobblestoneGroup.create(0, game.world.height - game.cache.getImage('grounda1').height, 'grounda1');
 
 	pillar = game.add.group();
 	pillars = game.add.group();
 	pillarBase = game.add.group();
+	
+
 
 
 	generatePillar(460,0);
@@ -104,9 +123,8 @@ function create(){
 	ant.animations.add('land', [14,15,16,17,18,19,20], 15, false);
 	ant.animations.add('jump', 21, 10, true);
 
-	game.physics.enable([ant, ground, backTrack], Phaser.Physics.ARCADE);
+	game.physics.enable([ant, backDrops], Phaser.Physics.ARCADE);
 
-	
 	ant.body.gravity.y = 800;
 	ant.body.collideWorldBounds = true;
 	ant.anchor.setTo(.5, .5);
@@ -114,7 +132,13 @@ function create(){
 
 	//Enables physics for all loaded platforms
 
-	ground.body.immovable = true;
+	//ground.body.immovable = true;
+
+
+	cobblestoneGroup.forEach(function(item){
+			game.physics.enable([ant, item], Phaser.Physics.ARCADE);
+			item.body.immovable = true;
+	}, this);
 
 	platforms.forEach(function(item){
 	    game.physics.enable([ant, item], Phaser.Physics.ARCADE);
@@ -167,6 +191,18 @@ function generatePillar(xPos, crackPos){
 		game.physics.arcade.enable(pil);
 		pil.body.immovable = true;
 	}
+
+	shouldGenerate++;
+	if(shouldGenerate%2==0){
+		backgroundGenPos+=1640;
+		backDrops.create(backgroundGenPos, 0, 'backgroundA1');
+		//ground = game.add.sprite(backgroundGenPos, game.world.height - game.cache.getImage('grounda1').height, 'grounda1');
+		//ground.immovable = true;
+		var cob = cobblestoneGroup.create(backgroundGenPos, game.world.height - game.cache.getImage('grounda1').height, 'grounda1');
+		cob.enableBody = true;
+		game.physics.arcade.enable(cob);
+		cob.body.immovable = true;
+	}
 }
 
 
@@ -186,27 +222,22 @@ function update(){
 		platforms.forEach(function(item){
 		    game.physics.arcade.collide(ant, item, onSurface, null, this);
 		}, this);
+		cobblestoneGroup.forEach(function(item){
+			game.physics.arcade.collide(ant, item, onSurface, null, this);
+		}, this);
 	} else {
 		platforms.forEach(function(item){
 		    game.physics.arcade.collide(ant, item);
 		}, this);
-	}
-
-	if(!onGround){
-		game.physics.arcade.collide(ant, ground, onSurface, null, this);
-		
-	} else {
-		game.physics.arcade.collide(ant, ground);
+		cobblestoneGroup.forEach(function(item){
+			game.physics.arcade.collide(ant, item);
+		}, this);
 	}
 
 	if(Math.abs(ant.body.velocity.y > 0)){
 		onGround = false;
 	}
 
-	//ant.animations.isFinished(cod());
-
- 	
- 	//ant.play('idle');
  	lTimer++;
 
  	if(leftKey.isDown || aKey.isDown){
@@ -215,13 +246,7 @@ function update(){
  		if(lTimer > 30){
  			ant.animations.play('run');
  		}
-
-
-
  		//backTrack.body.velocity.x = 20;
-
-
-
 
  	} else if(rightKey.isDown || dKey.isDown){
  		ant.body.velocity.x = 270;
@@ -255,7 +280,7 @@ function update(){
  	//Handles input
 
  	if(backMove==true){
- 		backTrack.body.velocity.x = -ant.body.velocity.x;
+ 		//backTrack.body.velocity.x = -ant.body.velocity.x;
  	}
 }
 
