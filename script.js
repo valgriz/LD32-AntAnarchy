@@ -47,6 +47,18 @@ var deadTimer;
 var originXPosition;
 var explosion;
 
+var score;
+var style;
+var scoreDisplay;
+
+var timeLeft;
+var timeLeftDisplay;
+
+var isHit;
+var simpleTimer;
+
+var gameOver;
+
 function preload(){
 	game.load.image('backgroundA1','assets/images/backgroundA2.png');
 	game.load.image('grounda1', 'assets/images/grounda4.png');
@@ -84,6 +96,9 @@ function create(){
 	loadLevel1();
 	deadTimer = 0;
 
+	isHit = false;
+	gameOver = false;
+
 	cobblestoneGroup = new Phaser.Group(game);
 	cobblestoneGroup.create(0, game.world.height - game.cache.getImage('grounda1').height, 'grounda1');
 
@@ -97,9 +112,10 @@ function create(){
 	nextColumnXPosition = 1180;
 	generatePillar(nextColumnXPosition, 8);
 
+	simpleTimer = 0;
 
 
-	originXPosition = 620;
+	originXPosition = 640;
 
 	ant = game.add.sprite(originXPosition, -50, 'ant');
 
@@ -124,10 +140,12 @@ function create(){
 	explosion.animations.add('explode', [0,1,2,3,4,5,6,7,8,9,10,11,12,12,13,14,15,16,17], 20, false);
 	explosion.animations.add('stop', [17], 20, true);
 
-	game.physics.enable([ant, backDrops], Phaser.Physics.ARCADE);
+	game.physics.enable([ant, backDrops, explosion], Phaser.Physics.ARCADE);
+	game.physics.arcade.enable(explosion);
+	explosion.enableBody = true;
 
 	ant.body.gravity.y = 800;
-	ant.body.collideWorldBounds = true;
+	ant.body.collideWorldBounds = false;
 	ant.anchor.setTo(.5, .5);
 	lTimer = 0;
 
@@ -163,6 +181,19 @@ function create(){
 
 	game.camera.follow(ant);
 
+
+	style = { font: "35px Arial", fill: "#ffffff", align: "center" };
+	score = 0;
+	scoreDisplay = game.add.text(20,20, "SCORE: " + score, style);
+	scoreDisplay.setShadow(2,2, 'rgba(0,0,0,1)',0);
+	scoreDisplay.fixedToCamera = true;
+
+	timeLeft = 10;
+	timeLeftDisplay = game.add.text(720,20, "TIME: " + timeLeft, style);
+	timeLeftDisplay.setShadow(2,2, 'rgba(0,0,0,1)',0);
+	timeLeftDisplay.fixedToCamera = true;
+
+
 }
 
 function explode(xPos, yPos){
@@ -177,8 +208,10 @@ function explode(xPos, yPos){
 }
 
 function generatePillar(xPos, crackPos){
-	for(var i = 0; i < 14; i++){
+	for(var i = 0; i < 20; i++){
 		var pil;
+
+		
 		if(i == 0){
 			pil = pillarBase.create(xPos, 40 * i, 'pi7');
 		} else if (i==1){
@@ -193,6 +226,8 @@ function generatePillar(xPos, crackPos){
 			} else if(i == crackPos+2){
 			pil = pillar.create(xPos + 15, 40*(crackPos + 1), 'pi5');
 			}
+		} else if (i > 14){
+			pil = pillar.create(xPos + 15, ((i - 14) * -20), 'pi3');
 		} else {
 			pil = pillar.create(xPos + 15, 40 * i, 'pi3');
 		}
@@ -218,6 +253,7 @@ function update(){
 	if(!isDead){
 		game.physics.arcade.collide(ant, pillar, pillCollide, null, this);
 		game.physics.arcade.collide(ant, pillarBase, pillCollide, null, this);
+		
 		//////////////////////////////////////////////
 		// EDIT FOR SPIKE DEATH
 		// ///////////////////////////////////////////
@@ -225,6 +261,7 @@ function update(){
 		    game.physics.arcade.collide(ant, item, function(){theDeadMethod();}, null, this);
 		}, this);
     } else {
+
     	ant.animations.play('dead');
     	if(ant.body.velocity > 0){
     		ant.body.velocity = -ant.body.velocity;
@@ -292,10 +329,17 @@ function update(){
 		deadTimer++;
 		if(deadTimer > 100){
 			ant.body.velocity.x = -400;
-			ant.body.gravity.y = 0;
+			ant.body.gravity.y = 10;
 			ant.enableBody = false;		
 		} else {
 			ant.body.velocity.x = 0;
+			if(isHit){
+				score++;
+	   			scoreDisplay.setText('SCORE: ' + score);
+				isHit = false;
+				timeLeft += 10 + (2 *score);
+			}
+
 		}
 	}
 
@@ -320,11 +364,36 @@ function update(){
  		isDead = false;
  	}
 
+ 	console.log('vv'+ timeLeftDisplay.getBounds().width);
+ 	timeLeftDisplay.cameraOffset.y = 20;
+ 	timeLeftDisplay.cameraOffset.x = (800 - timeLeftDisplay.getBounds().width);
+
+
+	if(timeLeft < 1){
+		if(!gameOver){
+			gameOver = true;
+			gameOverAction();
+		}
+	} else {
+ 		simpleTimer ++;
+ 	}
+	console.log('time: ' + simpleTimer);
+
+	if(simpleTimer >= 60){
+		simpleTimer = 0;
+		timeLeft--;
+		timeLeftDisplay.setText('TIME: ' + timeLeft);
+	}
 }
 
-function theDeadMethod(){
+function gameOverAction(){
+	if(confirm('You scored ' + score + ' points.  Press OK to restart.') == true){
+		location.reload();
+	} else {
 
+	}
 }
+
 
 function pillCollide(ant, pilC){
 	if((pilC.key == 'pi4' || pilC.key == 'pi5') && spaceBar.isDown){
@@ -334,8 +403,7 @@ function pillCollide(ant, pilC){
 	    var cYPos = Math.floor((Math.random() * 9) + 1);
 	    generatePillar(nextColumnXPosition, cYPos);
 	   	generateMorePlatforms(10);
-
-	   	console.log('cYpos: ' + cYPos);
+	   	isHit = true;
 	}
 }
 
