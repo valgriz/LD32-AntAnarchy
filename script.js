@@ -1,4 +1,4 @@
-var game = new Phaser.Game(820, 560, Phaser.AUTO, '',{preload: preload, create: create, update: update});
+var game = new Phaser.Game(820, 560, Phaser.AUTO, 'phaser-game',{preload: preload, create: create, update: update});
 
 this.game.stage.scape.pageAlignHorizontally = true;
 this.game.stage.scale.pageAlighVertically = true;
@@ -61,6 +61,13 @@ var simpleTimer;
 
 var gameOver;
 
+var soua;
+var soub;
+var souc;
+var soud;
+
+var muted;
+
 function preload(){
 	game.load.image('backgroundA1','assets/images/backgroundA2.png');
 	game.load.image('grounda1', 'assets/images/grounda4.png');
@@ -75,10 +82,24 @@ function preload(){
 	game.load.image('pi5', 'assets/images/pit_5.png');
 	game.load.image('pi6', 'assets/images/pi_6.png');
 	game.load.image('pi7', 'assets/images/pi_7.png');
+	game.load.audio('sa','assets/sounds/sounda.mp3');
+	game.load.audio('sb','assets/sounds/soundb.mp3');
+	game.load.audio('sc','assets/sounds/soundc.mp3');
+	game.load.audio('sd','assets/sounds/soundd.mp3');
+	game.load.audio('se','assets/sounds/sounde.mp3');
 }
 
 
 function create(){
+
+	muted = false;
+
+	soua = game.add.audio('sa');
+	soub = game.add.audio('sb');
+	souc = game.add.audio('sc');
+	soud = game.add.audio('sd');
+	soue = game.add.audio('se');
+
 	onGround = false;
 
     game.world.setBounds(0, 0, 1640, 560);
@@ -119,7 +140,6 @@ function create(){
 
 	simpleTimer = 0;
 
-
 	originXPosition = 640;
 
 	ant = game.add.sprite(originXPosition, -50, 'ant');
@@ -129,7 +149,6 @@ function create(){
 	ant.animations.add('land', [14,15,16,17,18,19,20], 15, false);
 	ant.animations.add('jump', 21, 10, true);
 	ant.animations.add('dead', [23], 10, true);
-
 
 	explosion = game.add.sprite(900, 100, 'explosiona');
 	explosion.animations.add('explode', [0,1,2,3,4,5,6,7,8,9,10,11,12,12,13,14,15,16,17], 20, false);
@@ -158,12 +177,6 @@ function create(){
 	    item.body.immovable = true;
 	}, this);
 
-
-	// spikes.forEach(function(sp){
-	//     game.physics.enable([ant, sp], Phaser.Physics.ARCADE);
-	//     sp.body.immovable = true;
-	// }, this);
-
 	generateMorePlatforms(10);
 
 	//Defines input keys
@@ -177,7 +190,6 @@ function create(){
 
 	game.camera.follow(ant);
 
-
 	style = { font: "35px Arial", fill: "#ffffff", align: "center" };
 	score = 0;
 	scoreDisplay = game.add.text(20,20, "SCORE: " + score, style);
@@ -190,7 +202,70 @@ function create(){
 	timeLeftDisplay.fixedToCamera = true;
 
 
-} 
+	game.input.keyboard.onUpCallback = function( e ){
+            if(e.keyCode == Phaser.Keyboard.M){
+                theMuteFunction();
+            } else if(e.keyCode == Phaser.Keyboard.P){
+            	alert('Game paused, click OK to resume.');
+            }
+    };
+
+}
+
+function theMuteFunction(){
+
+	console.log('muted:' + muted);
+	if(muted){
+		
+		alert('Sounds are on.');
+		muted = false;
+	} else {
+		
+		alert('Sounds are off.');
+		muted = true;
+	}
+	console.log('muted:' + muted);
+}
+
+function playA(){
+	if(!muted){
+		if(!soua.isPlaying ){
+			soua.play();
+		}
+	}
+}
+
+function playB(){
+	if(!muted){
+		if(!soub.isPlaying){
+			soub.play();
+		}
+	}
+}
+
+function playC(){
+	if(!muted){
+		if(!souc.isPlaying){
+			souc.play();
+		}
+	}
+}
+
+function playD(){
+	if(!muted){
+		if(!soud.isPlaying){
+			soud.play();
+		}
+	}
+}
+
+function playE(){
+	if(!muted){
+		if(!soue.isPlaying){
+			soue.play();
+		}
+	}
+}
 
 function checkExplosionCollision(){
 	console.log('x: ' + explosion.x + ", y: " + explosion.y);
@@ -198,8 +273,6 @@ function checkExplosionCollision(){
 	pillar.forEach(function(item){
 		    //game.physics.arcade.collide(explosion, item, function(){explosionCollided();}, null, this);
 		}, this);
-
-
 }
 
 
@@ -216,6 +289,7 @@ function explode(xPos, yPos){
 		explosion.play('explode');
 		checkExplosionCollision();
 		isDead = true;
+		playA();
 	}
 }
 
@@ -332,6 +406,9 @@ function update(){
 	 		ant.scale.x = -1;
 	 		if(lTimer > 30){
 	 			ant.animations.play('run');
+	 			if(!souc.isPlaying){
+	 				//playC();
+	 			}
 	 		}
 	 		//backTrack.body.velocity.x = 20;
 
@@ -340,6 +417,9 @@ function update(){
 	 		ant.scale.x = 1;
 	 		if(lTimer > 30){
 	 			ant.animations.play('run');
+				if(!souc.isPlaying){
+	 				//playC();
+	 			} 	
 	 		}
 	 	} else {
 	 		//ant.body.velocity.x = 0;
@@ -354,6 +434,7 @@ function update(){
 	 	}
 	 	if((upKey.isDown || wKey.isDown) && ant.body.velocity.y ==0){
 	 		ant.body.velocity.y = -500;
+	 		playD();
 	 	}
  	}
 	///////////////////////////////
@@ -382,6 +463,7 @@ function update(){
 		}
 	}
 
+
 	if(spaceBar.isDown){
 		topScale();
 		ant.anchor.setTo(.5,.5);
@@ -391,22 +473,10 @@ function update(){
 	   	ant.animations.play('dead');
 		ant.body.gravity.y = 0;
 		ant.enableBody = true;	
-
-		console.log('smart');
-		
-
-		
 		pillar.forEach(function(item){
-
 		game.physics.arcade.overlap(ant, item, pillNC, null, this);
-
-	    
 	}, this);
-
-
 		ant.enableBody = false;
-
-
 	}
 
  	if(backMove==true){
@@ -419,6 +489,7 @@ function update(){
  		ant.body.gravity.y = 800;
  		resetScale();
  		isDead = false;
+ 		playB();
  	}
 
  	timeLeftDisplay.cameraOffset.y = 20;
@@ -517,4 +588,5 @@ function onSurface(){
 	onGround = true;
 	lTimer = 0;
 	ant.animations.play('land');
+	playE();
 }
