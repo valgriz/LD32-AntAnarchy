@@ -29,6 +29,8 @@ var pillars;
 var pillarBase;
 var backDrops;
 
+var spikeGroup;
+
 var lTimer;
 
 var backgroundX;
@@ -62,10 +64,10 @@ var gameOver;
 function preload(){
 	game.load.image('backgroundA1','assets/images/backgroundA2.png');
 	game.load.image('grounda1', 'assets/images/grounda4.png');
-	game.load.spritesheet('ant', 'assets/images/anta12.png', 44, 24, 23);
-	game.load.spritesheet('explosion', 'assets/images/explosiona1.png', 71, 100, 18);
+	game.load.spritesheet('ant', 'assets/images/anta13.png', 44, 24, 24);
+	game.load.spritesheet('explosiona', 'assets/images/explosiona1.png', 71, 100, 18);
 	game.load.image('platforma1', 'assets/images/platformb1.png');
-	game.load.image('spikes', 'assets/images/spikes.png');
+	game.load.image('spikeSprite', 'assets/images/spikes2.png');
 	game.load.image('pi1', 'assets/images/pi_1.png');
 	game.load.image('pi2', 'assets/images/pi_2.png');
 	game.load.image('pi3', 'assets/images/pit_3.png');
@@ -91,6 +93,7 @@ function create(){
 
 	game.stage.backgroundColor = '#123333';
 
+
 	//Loads first level
 	platforms = new Phaser.Group(game);
 	loadLevel1();
@@ -101,6 +104,8 @@ function create(){
 
 	cobblestoneGroup = new Phaser.Group(game);
 	cobblestoneGroup.create(0, game.world.height - game.cache.getImage('grounda1').height, 'grounda1');
+
+	spikeGroup = new Phaser.Group(game);
 
 	pillar = game.add.group();
 	pillars = game.add.group();
@@ -118,30 +123,19 @@ function create(){
 	originXPosition = 640;
 
 	ant = game.add.sprite(originXPosition, -50, 'ant');
-
 	
-
-	/////////////////////////////
-	//Spawn spikes
-	////////////////////////////
-	spikes = new Phaser.Group(game);
-	for(i = 0; i < 10; i++){
-	    //spikes.add(game.add.sprite((400+80*i), 510, 'spikes'));
-	}
-
 	ant.animations.add('idle', [0,1,2,3,4,5,6], 10, true);
 	ant.animations.add('run', [7,8,9,10,11,12,13], 10, true);
 	ant.animations.add('land', [14,15,16,17,18,19,20], 15, false);
 	ant.animations.add('jump', 21, 10, true);
-	ant.animations.add('dead', [22], 10, true);
+	ant.animations.add('dead', [23], 10, true);
 
 
-	explosion = game.add.sprite(900, 100, 'explosion');
+	explosion = game.add.sprite(900, 100, 'explosiona');
 	explosion.animations.add('explode', [0,1,2,3,4,5,6,7,8,9,10,11,12,12,13,14,15,16,17], 20, false);
 	explosion.animations.add('stop', [17], 20, true);
 
 	game.physics.enable([ant, backDrops, explosion], Phaser.Physics.ARCADE);
-	game.physics.arcade.enable(explosion);
 	explosion.enableBody = true;
 
 	ant.body.gravity.y = 800;
@@ -163,10 +157,12 @@ function create(){
 	    item.body.checkCollision.right = false;
 	    item.body.immovable = true;
 	}, this);
-	spikes.forEach(function(sp){
-	    game.physics.enable([ant, sp], Phaser.Physics.ARCADE);
-	    sp.body.immovable = true;
-	}, this);
+
+
+	// spikes.forEach(function(sp){
+	//     game.physics.enable([ant, sp], Phaser.Physics.ARCADE);
+	//     sp.body.immovable = true;
+	// }, this);
 
 	generateMorePlatforms(10);
 
@@ -194,15 +190,31 @@ function create(){
 	timeLeftDisplay.fixedToCamera = true;
 
 
+} 
+
+function checkExplosionCollision(){
+	console.log('x: ' + explosion.x + ", y: " + explosion.y);
+	
+	pillar.forEach(function(item){
+		    //game.physics.arcade.collide(explosion, item, function(){explosionCollided();}, null, this);
+		}, this);
+
+
+}
+
+
+function explosionCollided(expl, pilC){
+	
 }
 
 function explode(xPos, yPos){
 	if(!isDead){
-		explosion.x = xPos - 10;
-		explosion.y = yPos - 75;
+		explosion.body.x = xPos - 10;
+		explosion.body.y = yPos - 75;
 		explosion.scale.x = 2;
 		explosion.scale.y = 2;
 		explosion.play('explode');
+		checkExplosionCollision();
 		isDead = true;
 	}
 }
@@ -210,8 +222,6 @@ function explode(xPos, yPos){
 function generatePillar(xPos, crackPos){
 	for(var i = 0; i < 20; i++){
 		var pil;
-
-		
 		if(i == 0){
 			pil = pillarBase.create(xPos, 40 * i, 'pi7');
 		} else if (i==1){
@@ -235,7 +245,7 @@ function generatePillar(xPos, crackPos){
 		game.physics.arcade.enable(pil);
 		pil.body.immovable = true;
 	}
-
+	generateSpikes();
 	shouldGenerate++;
 	if(shouldGenerate%2==0){
 		backgroundGenPos+=1640;
@@ -249,22 +259,49 @@ function generatePillar(xPos, crackPos){
 	}
 }
 
+function spikeCollision(){
+	if(!isDead){
+		topScale();
+				ant.anchor.setTo(.5,.5);
+			   	explode(ant.body.x, ant.body.y);
+			    isDead = true;
+			    ant.animations.stop();
+			   	ant.animations.play('dead');
+				ant.body.gravity.y = 0;
+				ant.enableBody = true;
+				ant.body.y = -100;
+				pillar.forEach(function(item){
+				game.physics.arcade.overlap(ant, item, pillNC, null, this);
+		}, this);
+	}
+}
+
+
+function generateSpikes(){
+	for(i = 0; i < 5; i++){
+	  var spk = spikeGroup.create(1180 + (backgroundGenPos) + Math.floor((Math.random() * 1640) + 1), game.world.height - game.cache.getImage('spikeSprite').height - game.cache.getImage('grounda1').height,'spikeSprite');
+	  spk.enableBody = true;
+	  game.physics.arcade.enable(spk);
+	  spk.body.immovable = true;
+	}
+}
+
 function update(){
 	if(!isDead){
+		game.physics.arcade.collide(ant, spikeGroup, spikeCollision, null, this);
 		game.physics.arcade.collide(ant, pillar, pillCollide, null, this);
 		game.physics.arcade.collide(ant, pillarBase, pillCollide, null, this);
 		
 		//////////////////////////////////////////////
 		// EDIT FOR SPIKE DEATH
 		// ///////////////////////////////////////////
-		spikes.forEach(function(item){
-		    game.physics.arcade.collide(ant, item, function(){theDeadMethod();}, null, this);
-		}, this);
+
     } else {
 
     	ant.animations.play('dead');
     	if(ant.body.velocity > 0){
     		ant.body.velocity = -ant.body.velocity;
+    		resetScale();
     	}
     }
     if(!onGround){
@@ -327,9 +364,11 @@ function update(){
 	}
 	if(isDead){
 		deadTimer++;
+		
 		if(deadTimer > 100){
 			ant.body.velocity.x = -400;
 			ant.body.gravity.y = 10;
+			
 			ant.enableBody = false;		
 		} else {
 			ant.body.velocity.x = 0;
@@ -344,12 +383,29 @@ function update(){
 	}
 
 	if(spaceBar.isDown){
-	   explode(ant.body.x, ant.body.y);
+		topScale();
+		ant.anchor.setTo(.5,.5);
+	   	explode(ant.body.x, ant.body.y);
 	    isDead = true;
 	    ant.animations.stop();
 	   	ant.animations.play('dead');
 		ant.body.gravity.y = 0;
-		ant.enableBody = false;	
+		ant.enableBody = true;	
+
+		console.log('smart');
+		
+
+		
+		pillar.forEach(function(item){
+
+		game.physics.arcade.overlap(ant, item, pillNC, null, this);
+
+	    
+	}, this);
+
+
+		ant.enableBody = false;
+
 
 	}
 
@@ -361,13 +417,12 @@ function update(){
 		ant.body.x = originXPosition;
  		ant.body.y = -50;
  		ant.body.gravity.y = 800;
+ 		resetScale();
  		isDead = false;
  	}
 
- 	console.log('vv'+ timeLeftDisplay.getBounds().width);
  	timeLeftDisplay.cameraOffset.y = 20;
  	timeLeftDisplay.cameraOffset.x = (800 - timeLeftDisplay.getBounds().width);
-
 
 	if(timeLeft < 1){
 		if(!gameOver){
@@ -375,10 +430,10 @@ function update(){
 			gameOverAction();
 		}
 	} else {
- 		simpleTimer ++;
+ 		if(!isDead){
+ 			simpleTimer ++;
+ 		}
  	}
-	console.log('time: ' + simpleTimer);
-
 	if(simpleTimer >= 60){
 		simpleTimer = 0;
 		timeLeft--;
@@ -394,9 +449,33 @@ function gameOverAction(){
 	}
 }
 
+function resetScale(){
+	ant.scale.x = 1;
+ 	ant.scale.y = 1;
+}
+
+function topScale(){
+	ant.scale.x = 5;
+	ant.scale.y = 5;
+}
+
+function pillNC(ant, pilC){
+	if((pilC.key == 'pi4' || pilC.key == 'pi5')){
+		console.log('STEEEEEEEEEEEVE');
+	    pilC.kill();
+	    game.world.setBounds(0,0, game.world.getBounds().width + 820 ,560)
+	    nextColumnXPosition+=720;
+	    var cYPos = Math.floor((Math.random() * 9) + 1);
+	    generatePillar(nextColumnXPosition, cYPos);
+	   	generateMorePlatforms(10);
+	   	isHit = true;
+	}
+}
+
 
 function pillCollide(ant, pilC){
 	if((pilC.key == 'pi4' || pilC.key == 'pi5') && spaceBar.isDown){
+		console.log('inner bounds');
 	    pilC.kill();
 	    game.world.setBounds(0,0, game.world.getBounds().width + 820 ,560)
 	    nextColumnXPosition+=720;
@@ -410,7 +489,7 @@ function pillCollide(ant, pilC){
 function generateMorePlatforms(howMany){
 	//THIS NEEDS WORK
 	for(var f = 0; f < howMany; f++){
-		platforms.add(game.add.sprite(nextColumnXPosition + 100 + (Math.random() * 720), (Math.random() * 560), 'platforma1'));
+		platforms.add(game.add.sprite(nextColumnXPosition + 100 + (Math.random() * 720), 100 + (Math.random() * 460), 'platforma1'));
 	}
 	platforms.forEach(function(item){
 	    game.physics.enable([ant, item], Phaser.Physics.ARCADE);
